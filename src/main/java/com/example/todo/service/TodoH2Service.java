@@ -19,28 +19,36 @@ public class TodoH2Service implements TodoRepository {
 
     @Override
     public ArrayList<Todo> getTodos() {
-        return (ArrayList<Todo>) db.query("SELECT * FROM TODOLIST", new TodoRowMapper());
+        return (ArrayList<Todo>) db.query("SELECT id, todo, priority, status FROM TODOLIST", new TodoRowMapper());
     }
 
     @Override
     public Todo getTodoById(int id) {
+        Todo todo = null;
         try {
-            return db.queryForObject("SELECT * FROM TODOLIST WHERE id = ?", new TodoRowMapper(), id);
+            todo = db.queryForObject("SELECT id, todo, priority, status FROM TODOLIST WHERE id = ?",
+                    new TodoRowMapper(), id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Todo not found with ID: " + id);
         }
+        return todo;
     }
 
-    @Override
-    public Todo addTodo(Todo todo) {
-        String sql = "INSERT INTO TODOLIST (todo, status, priority) VALUES (?, ?, ?)";
-        db.update(sql, todo.getTodo(), todo.getStatus(), todo.getPriority());
-        return db.queryForObject("SELECT * FROM TODOLIST WHERE id = ?", new TodoRowMapper(), todo.getId());
-    }
+@Override
+public Todo addTodo(Todo todo) {
+    String sql = "INSERT INTO TODOLIST (todo, priority, status) VALUES (?, ?, ?)";
+    db.update(sql, todo.getTodo(), todo.getPriority(), todo.getStatus());
+    Integer id = db.queryForObject("SELECT MAX(id) FROM TODOLIST", Integer.class);
+    return getTodoById(id);
+}
+
 
     @Override
     public void deleteTodo(int id) {
-        db.update("DELETE FROM TODOLIST WHERE id = ?", id);
+        int rowsAffected = db.update("DELETE FROM TODOLIST WHERE id = ?", id);
+        if (rowsAffected == 0) {
+            throw new ResponseStatusException(HttpStatus.OK, "Todo not found with ID: " + id);
+        }
     }
 
     @Override
@@ -50,12 +58,12 @@ public class TodoH2Service implements TodoRepository {
         if (todo.getTodo() != null) {
             db.update("UPDATE TODOLIST SET todo = ? WHERE id = ?", todo.getTodo(), id);
         }
-        if (todo.getStatus() != null) {
-            db.update("UPDATE TODOLIST SET status = ? WHERE id = ?", todo.getStatus(), id);
-        }
         if (todo.getPriority() != null) {
             db.update("UPDATE TODOLIST SET priority = ? WHERE id = ?", todo.getPriority(), id);
         }
-        return db.queryForObject("SELECT * FROM TODOLIST WHERE id = ?", new TodoRowMapper(), id);
+        if (todo.getStatus() != null) {
+            db.update("UPDATE TODOLIST SET status = ? WHERE id = ?", todo.getStatus(), id);
+        }
+        return getTodoById(id);
     }
 }
