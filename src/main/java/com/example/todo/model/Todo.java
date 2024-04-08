@@ -4,17 +4,17 @@ public class Todo {
 
     private int id;
     private String todo;
-    private String status;
     private String priority;
+    private String status;
 
     public Todo() {
     }
 
-    public Todo(int id, String todo, String status, String priority) {
+    public Todo(int id, String todo, String priority, String status) {
         this.id = id;
         this.todo = todo;
-        this.status = status;
         this.priority = priority;
+        this.status = status;
     }
 
     public int getId() {
@@ -33,6 +33,14 @@ public class Todo {
         this.todo = todo;
     }
 
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -41,11 +49,4 @@ public class Todo {
         this.status = status;
     }
 
-    public String getPriority() {
-        return priority;
-    }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
 }
